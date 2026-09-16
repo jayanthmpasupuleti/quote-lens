@@ -6,6 +6,7 @@ import { APP_CONFIG } from '@/constants/config';
 import { Screen, AppText, Card, Divider } from '@/components/ui';
 
 interface SettingRowProps {
+  icon?: string;
   label: string;
   value?: string;
   onPress?: () => void;
@@ -13,6 +14,7 @@ interface SettingRowProps {
 }
 
 const SettingRow: React.FC<SettingRowProps> = ({
+  icon,
   label,
   value,
   onPress,
@@ -26,17 +28,27 @@ const SettingRow: React.FC<SettingRowProps> = ({
       accessibilityRole="button"
       accessibilityLabel={`${label}${value ? `, ${value}` : ''}`}
     >
-      <AppText variant="body" color={Colors.primaryText}>
-        {label}
-      </AppText>
+      <View style={styles.leftContent}>
+        {icon && (
+          <View style={styles.iconOrb}>
+            <AppText variant="caption" color={Colors.secondaryText}>
+              {icon}
+            </AppText>
+          </View>
+        )}
+        <AppText variant="bodyMedium" color={Colors.primaryText} style={styles.labelText}>
+          {label}
+        </AppText>
+      </View>
+
       <View style={styles.rightContent}>
         {value && (
-          <AppText variant="body" color={Colors.secondaryText}>
+          <AppText variant="body" color={Colors.secondaryText} style={styles.valueText}>
             {value}
           </AppText>
         )}
         {showChevron && (
-          <AppText variant="caption" color={Colors.secondaryText} style={styles.chevron}>
+          <AppText variant="caption" color={Colors.tertiaryText} style={styles.chevron}>
             ›
           </AppText>
         )}
@@ -53,25 +65,23 @@ export default function SettingsScreen() {
   };
 
   const handleInfoPress = (title: string) => {
-    Alert.alert(title, `${title} information will be accessible here in upcoming updates.`);
+    Alert.alert(title, `${title} settings will be configurable in future updates.`);
   };
 
   return (
-    <Screen scrollable>
+    <Screen scrollable withAmbientBackground>
       {/* Title */}
       <View style={styles.header}>
-        <AppText variant="largeTitle" color={Colors.primaryText}>
+        <AppText variant="largeTitle" color={Colors.primaryText} style={styles.title}>
           Settings
         </AppText>
       </View>
 
       {/* Account Section */}
       <View style={styles.section}>
-        <AppText variant="label" color={Colors.secondaryText} style={styles.sectionTitle}>
-          ACCOUNT
-        </AppText>
-        <Card style={styles.groupCard}>
+        <Card variant="glass" style={styles.groupCard}>
           <SettingRow
+            icon="👤"
             label="Account"
             value="Not signed in"
             onPress={() => handleInfoPress('Account')}
@@ -82,23 +92,23 @@ export default function SettingsScreen() {
       {/* Preferences Section */}
       <View style={styles.section}>
         <AppText variant="label" color={Colors.secondaryText} style={styles.sectionTitle}>
-          PREFERENCES
+          Preferences
         </AppText>
-        <Card style={styles.groupCard}>
+        <Card variant="glass" style={styles.groupCard}>
           <SettingRow
             label="Currency"
             value={`${APP_CONFIG.defaultCurrency} ${APP_CONFIG.defaultCurrencySymbol}`}
-            showChevron={false}
+            onPress={() => handleInfoPress('Currency')}
           />
-          <Divider marginVertical={Spacing.xs} />
+          <Divider marginVertical={Spacing.xxs} color={Colors.subtleBorder} />
           <SettingRow
-            label="Initial Market"
-            value={APP_CONFIG.initialMarket}
-            showChevron={false}
+            label="Appearance"
+            value="System"
+            onPress={() => handleInfoPress('Appearance')}
           />
-          <Divider marginVertical={Spacing.xs} />
+          <Divider marginVertical={Spacing.xxs} color={Colors.subtleBorder} />
           <SettingRow
-            label="View Onboarding Tutorial"
+            label="Onboarding Tutorial"
             onPress={handleShowOnboarding}
           />
         </Card>
@@ -107,30 +117,31 @@ export default function SettingsScreen() {
       {/* About Section */}
       <View style={styles.section}>
         <AppText variant="label" color={Colors.secondaryText} style={styles.sectionTitle}>
-          ABOUT
+          About
         </AppText>
-        <Card style={styles.groupCard}>
+        <Card variant="glass" style={styles.groupCard}>
+          <SettingRow
+            label="Privacy"
+            onPress={() => handleInfoPress('Privacy')}
+          />
+          <Divider marginVertical={Spacing.xxs} color={Colors.subtleBorder} />
+          <SettingRow
+            label="Terms"
+            onPress={() => handleInfoPress('Terms')}
+          />
+          <Divider marginVertical={Spacing.xxs} color={Colors.subtleBorder} />
           <SettingRow
             label="About QuoteLens"
             onPress={() => handleInfoPress('About QuoteLens')}
           />
-          <Divider marginVertical={Spacing.xs} />
-          <SettingRow
-            label="Privacy"
-            onPress={() => handleInfoPress('Privacy Policy')}
-          />
-          <Divider marginVertical={Spacing.xs} />
-          <SettingRow
-            label="Terms"
-            onPress={() => handleInfoPress('Terms of Service')}
-          />
-          <Divider marginVertical={Spacing.xs} />
-          <SettingRow
-            label="Version"
-            value={APP_CONFIG.version}
-            showChevron={false}
-          />
         </Card>
+      </View>
+
+      {/* Version Footer */}
+      <View style={styles.versionFooter}>
+        <AppText variant="caption" color={Colors.tertiaryText}>
+          Version {APP_CONFIG.version} (1)
+        </AppText>
       </View>
     </Screen>
   );
@@ -138,40 +149,76 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.lg,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.md,
+  },
+  title: {
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '700',
+    letterSpacing: -0.5,
   },
   section: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   sectionTitle: {
     marginBottom: Spacing.xs,
-    marginLeft: 4,
-    letterSpacing: 0.5,
+    marginLeft: 6,
+    fontWeight: '600',
+    fontSize: 13,
+    color: '#4B5563',
   },
   groupCard: {
-    padding: Spacing.xs,
+    paddingHorizontal: Spacing.xs,
+    paddingVertical: 4,
+    backgroundColor: Colors.surface,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: Spacing.sm,
+    paddingVertical: 12,
     paddingHorizontal: Spacing.sm,
-    minHeight: 44,
+    minHeight: 46,
   },
   rowPressed: {
     backgroundColor: Colors.pressed,
-    borderRadius: Radii.small,
+    borderRadius: Radii.medium,
+  },
+  leftContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  iconOrb: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  labelText: {
+    fontSize: 15,
+    fontWeight: '500',
   },
   rightContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+  },
+  valueText: {
+    fontSize: 15,
+    color: '#64748B',
   },
   chevron: {
     fontSize: 18,
-    lineHeight: 20,
-    color: '#9CA3AF',
+    lineHeight: 18,
+    color: '#94A3B8',
+  },
+  versionFooter: {
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    marginBottom: Spacing.xxl,
   },
 });

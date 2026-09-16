@@ -5,10 +5,10 @@ import {
   ViewStyle,
   ScrollView,
   StatusBar,
-  Platform,
 } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';
-import { Colors, Spacing } from '@/theme';
+import { Spacing } from '@/theme';
+import { AmbientBackground } from './AmbientBackground';
 
 export interface ScreenProps {
   children: React.ReactNode;
@@ -16,8 +16,8 @@ export interface ScreenProps {
   contentContainerStyle?: ViewStyle;
   scrollable?: boolean;
   edges?: Edge[];
-  backgroundColor?: string;
   horizontalPadding?: boolean;
+  withAmbientBackground?: boolean;
 }
 
 export const Screen: React.FC<ScreenProps> = ({
@@ -26,23 +26,23 @@ export const Screen: React.FC<ScreenProps> = ({
   contentContainerStyle,
   scrollable = false,
   edges = ['top', 'left', 'right'],
-  backgroundColor = Colors.background,
   horizontalPadding = true,
+  withAmbientBackground = true,
 }) => {
   const containerPadding = horizontalPadding ? Spacing.screenHorizontal : 0;
 
-  return (
+  const content = (
     <SafeAreaView
       edges={edges}
       style={[
         styles.safeArea,
-        { backgroundColor },
         style,
       ]}
     >
       <StatusBar
         barStyle="dark-content"
-        backgroundColor={backgroundColor}
+        backgroundColor="transparent"
+        translucent
       />
       {scrollable ? (
         <ScrollView
@@ -70,6 +70,12 @@ export const Screen: React.FC<ScreenProps> = ({
       )}
     </SafeAreaView>
   );
+
+  if (withAmbientBackground) {
+    return <AmbientBackground>{content}</AmbientBackground>;
+  }
+
+  return content;
 };
 
 const styles = StyleSheet.create({
@@ -81,7 +87,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: Spacing.massive,
+    paddingBottom: Spacing.massive + 40, // Ensure space above floating tab bar
   },
   staticContent: {
     flex: 1,

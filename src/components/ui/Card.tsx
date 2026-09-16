@@ -7,7 +7,7 @@ import {
   Pressable,
   AccessibilityRole,
 } from 'react-native';
-import { Colors, Radii, Spacing } from '@/theme';
+import { Colors, Radii, Spacing, Shadows } from '@/theme';
 
 export interface CardProps {
   children: React.ReactNode;
@@ -15,6 +15,7 @@ export interface CardProps {
   onPress?: () => void;
   accessibilityLabel?: string;
   accessibilityHint?: string;
+  variant?: 'surface' | 'glass' | 'elevated' | 'subtle';
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -23,7 +24,15 @@ export const Card: React.FC<CardProps> = ({
   onPress,
   accessibilityLabel,
   accessibilityHint,
+  variant = 'surface',
 }) => {
+  const variantStyles = {
+    surface: styles.surfaceCard,
+    glass: styles.glassCard,
+    elevated: styles.elevatedCard,
+    subtle: styles.subtleCard,
+  }[variant];
+
   if (onPress) {
     return (
       <Pressable
@@ -32,7 +41,8 @@ export const Card: React.FC<CardProps> = ({
         accessibilityLabel={accessibilityLabel}
         accessibilityHint={accessibilityHint}
         style={({ pressed }) => [
-          styles.card,
+          styles.baseCard,
+          variantStyles,
           pressed && styles.pressed,
           style,
         ]}
@@ -42,25 +52,43 @@ export const Card: React.FC<CardProps> = ({
     );
   }
 
-  return <View style={[styles.card, style]}>{children}</View>;
+  return (
+    <View style={[styles.baseCard, variantStyles, style]}>
+      {children}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  baseCard: {
+    borderRadius: Radii.card,
+    padding: Spacing.cardPadding,
+  },
+  surfaceCard: {
     backgroundColor: Colors.surface,
-    borderRadius: Radii.large,
     borderWidth: 1,
     borderColor: Colors.border,
-    padding: Spacing.cardPadding,
-    // Minimal subtle native shadow
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 3,
-    elevation: 1,
+    ...Shadows.subtle,
+  },
+  glassCard: {
+    backgroundColor: Colors.glassSurface,
+    borderWidth: 1,
+    borderColor: Colors.glassBorder,
+    ...Shadows.glass,
+  },
+  elevatedCard: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.subtleBorder,
+    ...Shadows.elevated,
+  },
+  subtleCard: {
+    backgroundColor: '#F3F5F9',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   pressed: {
-    backgroundColor: Colors.cardHighlight,
-    transform: [{ scale: 0.995 }],
+    opacity: 0.92,
+    transform: [{ scale: 0.992 }],
   },
 });

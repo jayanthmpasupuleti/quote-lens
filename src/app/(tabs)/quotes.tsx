@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Colors, Spacing } from '@/theme';
+import { Colors, Radii, Spacing } from '@/theme';
 import { MOCK_QUOTES } from '@/constants/mockData';
 import { Screen, AppText, EmptyState } from '@/components/ui';
 import { QuoteCard } from '@/components/quote';
 
+type FilterTab = 'all' | 'attention' | 'completed';
+
 export default function QuotesScreen() {
   const router = useRouter();
+  const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [quotes, setQuotes] = useState(MOCK_QUOTES);
 
   const handleQuotePress = (quoteId: string) => {
@@ -21,48 +24,90 @@ export default function QuotesScreen() {
     router.push('/(tabs)/scan');
   };
 
-  // Ability to toggle empty state for testing/demo purposes
-  const toggleMockData = () => {
-    setQuotes((prev) => (prev.length > 0 ? [] : MOCK_QUOTES));
-  };
+  // Filter quotes based on selected pill
+  const filteredQuotes = quotes.filter((q) => {
+    if (activeFilter === 'attention') return q.attentionCount > 0;
+    if (activeFilter === 'completed') return q.attentionCount === 0;
+    return true;
+  });
 
   return (
-    <Screen scrollable>
-      {/* Screen Title Bar */}
+    <Screen scrollable withAmbientBackground>
+      {/* Top Title Bar with Search Icon */}
       <View style={styles.header}>
-        <View>
-          <AppText variant="largeTitle" color={Colors.primaryText}>
-            Quotes
-          </AppText>
-          <AppText variant="caption" color={Colors.secondaryText}>
-            {quotes.length} {quotes.length === 1 ? 'quote' : 'quotes'} analyzed
+        <AppText variant="largeTitle" color={Colors.primaryText} style={styles.title}>
+          Your Quotes
+        </AppText>
+        <View style={styles.searchIconOrb}>
+          <AppText variant="body" color={Colors.secondaryText}>
+            🔍
           </AppText>
         </View>
+      </View>
 
-        {/* Demo toggle for empty state validation */}
+      {/* Segmented Filter Pills */}
+      <View style={styles.filterRow}>
         <Pressable
-          onPress={toggleMockData}
-          accessibilityRole="button"
-          accessibilityLabel="Toggle demo empty state"
-          style={styles.demoToggle}
+          onPress={() => setActiveFilter('all')}
+          style={[
+            styles.filterPill,
+            activeFilter === 'all' && styles.filterPillActive,
+          ]}
         >
-          <AppText variant="label" color={Colors.semantic.info}>
-            {quotes.length > 0 ? 'Demo Empty' : 'Show Mock'}
+          <AppText
+            variant="caption"
+            color={activeFilter === 'all' ? '#FFFFFF' : Colors.secondaryText}
+            style={styles.filterText}
+          >
+            All
+          </AppText>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setActiveFilter('attention')}
+          style={[
+            styles.filterPill,
+            activeFilter === 'attention' && styles.filterPillActive,
+          ]}
+        >
+          <AppText
+            variant="caption"
+            color={activeFilter === 'attention' ? '#FFFFFF' : Colors.secondaryText}
+            style={styles.filterText}
+          >
+            Needs Attention
+          </AppText>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setActiveFilter('completed')}
+          style={[
+            styles.filterPill,
+            activeFilter === 'completed' && styles.filterPillActive,
+          ]}
+        >
+          <AppText
+            variant="caption"
+            color={activeFilter === 'completed' ? '#FFFFFF' : Colors.secondaryText}
+            style={styles.filterText}
+          >
+            Completed
           </AppText>
         </Pressable>
       </View>
 
-      {quotes.length === 0 ? (
+      {/* Quote Cards List */}
+      {filteredQuotes.length === 0 ? (
         <EmptyState
-          title="No quotes yet"
-          description="Scan a service quotation or repair bill to see an instant line-by-line breakdown."
-          actionTitle="Scan Your First Quote"
+          title="No quotes in this filter"
+          description="Try selecting another category or scan a new service quote to get started."
+          actionTitle="Scan a Quote"
           onAction={handleScanPress}
           style={styles.emptyContainer}
         />
       ) : (
         <View style={styles.list}>
-          {quotes.map((quote) => (
+          {filteredQuotes.map((quote) => (
             <QuoteCard
               key={quote.id}
               quote={quote}
@@ -79,20 +124,48 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.lg,
+    alignItems: 'center',
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.md,
   },
-  demoToggle: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: Colors.semanticSubtle.info,
-    borderRadius: 6,
+  title: {
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  searchIconOrb: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.glassSurfaceHigh,
+    borderWidth: 1,
+    borderColor: Colors.glassBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: Spacing.md,
+  },
+  filterPill: {
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: Radii.pill,
+    backgroundColor: '#EBEFF5',
+  },
+  filterPillActive: {
+    backgroundColor: Colors.darkPrimaryCTA,
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   list: {
     gap: Spacing.xs,
   },
   emptyContainer: {
-    marginTop: Spacing.massive,
+    marginTop: Spacing.xxl,
   },
 });

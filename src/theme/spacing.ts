@@ -16,11 +16,3 @@ export const Spacing = {
   sectionSpacing: 24,
   sectionSpacingLarge: 32,
 } as const;
-
-export const Radii = {
-  small: 8,
-  medium: 12,
-  large: 16,
-  extraLarge: 20,
-  pill: 999,
-} as const;

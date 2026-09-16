@@ -1,53 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
   Dimensions,
   FlatList,
+  Pressable,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Colors, Radii, Spacing } from '@/theme';
-import { Screen, AppText, PrimaryButton, SecondaryButton } from '@/components/ui';
+import { Colors, Radii, Spacing, Shadows } from '@/theme';
+import { Screen, AppText } from '@/components/ui';
+import { OnboardingIllustration } from '@/components/ui/OnboardingIllustration';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface OnboardingStep {
   id: string;
-  stepNumber: number;
+  stepNumber: 1 | 2 | 3;
   title: string;
   body: string;
-  tag: string;
 }
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: 'step-1',
     stepNumber: 1,
-    tag: 'STEP 1 OF 3',
-    title: 'Understand before you pay.',
-    body: 'QuoteLens turns confusing service quotes into clear, understandable information.',
+    title: 'Understand\nbefore you pay.',
+    body: 'QuoteLens turns confusing\nservice quotes into clear,\nunderstandable information.',
   },
   {
     id: 'step-2',
     stepNumber: 2,
-    tag: 'STEP 2 OF 3',
-    title: 'Spot what deserves attention.',
-    body: 'Find unclear charges, missing details and things worth asking about.',
+    title: 'Spot what\ndeserves attention.',
+    body: 'Find unclear charges, missing\ndetails and things worth\nasking about.',
   },
   {
     id: 'step-3',
     stepNumber: 3,
-    tag: 'STEP 3 OF 3',
-    title: 'Know what to ask.',
-    body: 'Get practical questions to ask before approving the work.',
+    title: 'Know what\nto ask.',
+    body: 'Get practical questions to ask\nbefore approving the work.',
   },
 ];
 
 export default function OnboardingScreen() {
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
-  const flatListRef = React.useRef<FlatList>(null);
-  const screenWidth = Dimensions.get('window').width;
+  const flatListRef = useRef<FlatList>(null);
 
   const handleNext = () => {
     if (activeIndex < ONBOARDING_STEPS.length - 1) {
@@ -60,13 +59,12 @@ export default function OnboardingScreen() {
   };
 
   const handleComplete = () => {
-    // Navigate into main app tabs
     router.replace('/(tabs)');
   };
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / screenWidth);
+    const index = Math.round(offsetX / SCREEN_WIDTH);
     if (index !== activeIndex && index >= 0 && index < ONBOARDING_STEPS.length) {
       setActiveIndex(index);
     }
@@ -75,20 +73,23 @@ export default function OnboardingScreen() {
   const isLastStep = activeIndex === ONBOARDING_STEPS.length - 1;
 
   return (
-    <Screen horizontalPadding={false} contentContainerStyle={styles.container}>
-      {/* Top Header / Skip */}
+    <Screen horizontalPadding={false} withAmbientBackground contentContainerStyle={styles.container}>
+      {/* Top Header Bar with Skip */}
       <View style={styles.topBar}>
-        <AppText variant="label" color={Colors.secondaryText} style={styles.tagline}>
-          QUOTELENS
-        </AppText>
+        <View style={styles.spacer} />
         {!isLastStep ? (
-          <SecondaryButton
-            title="Skip"
+          <Pressable
             onPress={handleComplete}
-            style={styles.skipButton}
-          />
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Skip onboarding"
+          >
+            <AppText variant="caption" color={Colors.secondaryText} style={styles.skipText}>
+              Skip
+            </AppText>
+          </Pressable>
         ) : (
-          <View style={styles.skipButtonPlaceholder} />
+          <View style={styles.spacer} />
         )}
       </View>
 
@@ -103,25 +104,18 @@ export default function OnboardingScreen() {
         onScroll={onScroll}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
-          <View style={[styles.pageContainer, { width: screenWidth }]}>
+          <View style={[styles.pageContainer, { width: SCREEN_WIDTH }]}>
+            {/* Native Visual Liquid Glass Illustration */}
             <View style={styles.illustrationWrapper}>
-              <View style={styles.illustrationBox}>
-                <View style={styles.iconCircle}>
-                  <AppText variant="title" color={Colors.primaryText}>
-                    {item.stepNumber === 1 ? '🔍' : item.stepNumber === 2 ? '⚠️' : '💬'}
-                  </AppText>
-                </View>
-                <AppText variant="label" color={Colors.semantic.info} style={styles.stepTag}>
-                  {item.tag}
-                </AppText>
-              </View>
+              <OnboardingIllustration step={item.stepNumber} />
             </View>
 
+            {/* Typography */}
             <View style={styles.textWrapper}>
               <AppText
                 variant="display"
                 color={Colors.primaryText}
-                align="center"
+                align="left"
                 style={styles.title}
               >
                 {item.title}
@@ -129,7 +123,7 @@ export default function OnboardingScreen() {
               <AppText
                 variant="body"
                 color={Colors.secondaryText}
-                align="center"
+                align="left"
                 style={styles.body}
               >
                 {item.body}
@@ -141,7 +135,7 @@ export default function OnboardingScreen() {
 
       {/* Bottom Controls */}
       <View style={styles.bottomBar}>
-        {/* Indicators */}
+        {/* Minimal dot indicators */}
         <View style={styles.indicatorContainer}>
           {ONBOARDING_STEPS.map((_, index) => (
             <View
@@ -154,12 +148,36 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        {/* Action button */}
-        <PrimaryButton
-          title={isLastStep ? 'Start using QuoteLens' : 'Continue'}
-          onPress={handleNext}
-          style={styles.actionButton}
-        />
+        {/* Action Button: Circular arrow for steps 1 & 2, Full CTA pill for step 3 */}
+        {!isLastStep ? (
+          <Pressable
+            onPress={handleNext}
+            style={({ pressed }) => [
+              styles.circleNavButton,
+              pressed && styles.buttonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Next step"
+          >
+            <AppText variant="title" color="#FFFFFF" style={styles.arrowIcon}>
+              →
+            </AppText>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={handleNext}
+            style={({ pressed }) => [
+              styles.finalPillButton,
+              pressed && styles.buttonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Start using QuoteLens"
+          >
+            <AppText variant="bodyMedium" color="#FFFFFF" style={styles.finalButtonText}>
+              Start using QuoteLens →
+            </AppText>
+          </Pressable>
+        )}
       </View>
     </Screen>
   );
@@ -174,89 +192,95 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.screenHorizontal,
+    paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.xs,
+    minHeight: 32,
   },
-  tagline: {
-    letterSpacing: 1.2,
+  spacer: {
+    width: 40,
   },
-  skipButton: {
-    minHeight: 36,
-    paddingVertical: 6,
-    paddingHorizontal: Spacing.md,
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-  },
-  skipButtonPlaceholder: {
-    height: 36,
-    width: 60,
+  skipText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#64748B',
   },
   pageContainer: {
     flex: 1,
+    paddingHorizontal: Spacing.xl,
     justifyContent: 'center',
-    paddingHorizontal: Spacing.screenHorizontal,
-    paddingBottom: Spacing.xxl,
   },
   illustrationWrapper: {
     alignItems: 'center',
-    marginBottom: Spacing.xxl,
-  },
-  illustrationBox: {
-    width: 160,
-    height: 160,
-    borderRadius: Radii.extraLarge,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.xs,
-  },
-  iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepTag: {
-    letterSpacing: 0.8,
+    marginBottom: Spacing.xl,
   },
   textWrapper: {
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.xs,
   },
   title: {
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: '700',
+    letterSpacing: -0.6,
     marginBottom: Spacing.sm,
-    maxWidth: 320,
   },
   body: {
-    maxWidth: 300,
-    lineHeight: 24,
+    fontSize: 15.5,
+    lineHeight: 23,
+    color: '#64748B',
+    maxWidth: 290,
   },
   bottomBar: {
-    paddingHorizontal: Spacing.screenHorizontal,
-    paddingBottom: Spacing.lg,
-    gap: Spacing.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xl,
+    minHeight: 64,
   },
   indicatorContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   indicatorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.border,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#D1D5DB',
   },
   indicatorActive: {
-    width: 24,
-    backgroundColor: Colors.primaryText,
+    backgroundColor: Colors.darkPrimaryCTA,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
-  actionButton: {
-    width: '100%',
+  circleNavButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: Colors.darkPrimaryCTA,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Shadows.elevated,
+  },
+  arrowIcon: {
+    fontSize: 20,
+    lineHeight: 24,
+  },
+  finalPillButton: {
+    backgroundColor: Colors.darkPrimaryCTA,
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: Radii.pill,
+    ...Shadows.elevated,
+  },
+  finalButtonText: {
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  buttonPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.96 }],
   },
 });

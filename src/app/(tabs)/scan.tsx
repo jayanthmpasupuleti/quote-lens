@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Colors, Radii, Spacing } from '@/theme';
+import { Colors, Radii, Spacing, Shadows } from '@/theme';
 import {
   Screen,
   AppText,
@@ -10,38 +10,38 @@ import {
   Card,
 } from '@/components/ui';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
 export default function ScanScreen() {
   const router = useRouter();
 
   const handleOpenCamera = () => {
-    // Non-functional placeholder for Milestone 1
     router.push('/capture/camera');
   };
 
   const handleChoosePhotos = () => {
-    // Non-functional placeholder for Milestone 1
     router.push('/capture/review');
   };
 
   return (
-    <Screen scrollable contentContainerStyle={styles.container}>
-      <View style={styles.topSection}>
-        {/* Visual Target Frame Placeholder */}
-        <View style={styles.viewfinderContainer}>
-          <View style={styles.viewfinderBox}>
-            <View style={[styles.corner, styles.cornerTL]} />
-            <View style={[styles.corner, styles.cornerTR]} />
-            <View style={[styles.corner, styles.cornerBL]} />
-            <View style={[styles.corner, styles.cornerBR]} />
-
-            <View style={styles.innerDocIcon}>
-              <View style={styles.docLine1} />
-              <View style={styles.docLine2} />
-              <View style={styles.docLine3} />
+    <Screen scrollable withAmbientBackground contentContainerStyle={styles.container}>
+      <View style={styles.content}>
+        {/* Large Glass Camera Visual Header */}
+        <View style={styles.glassCameraWrapper}>
+          <View style={styles.cameraAmbientGlow} />
+          <View style={styles.glassPlateBack} />
+          <View style={styles.glassPlateFront}>
+            <View style={styles.outerLensRing}>
+              <View style={styles.middleLensRing}>
+                <View style={styles.innerCoreLens}>
+                  <View style={styles.lensReflection} />
+                </View>
+              </View>
             </View>
           </View>
         </View>
 
+        {/* Headline & Copy */}
         <AppText variant="largeTitle" color={Colors.primaryText} align="center" style={styles.headline}>
           Scan a quote
         </AppText>
@@ -53,55 +53,41 @@ export default function ScanScreen() {
         >
           Take a clear photo of your quote and we'll break it down for you.
         </AppText>
-      </View>
 
-      {/* Guidance Cards */}
-      <View style={styles.guidanceSection}>
-        <Card style={styles.guideCard}>
-          <AppText variant="section" color={Colors.primaryText} style={styles.guideTitle}>
-            Tips for best results
-          </AppText>
-          <View style={styles.bulletItem}>
-            <AppText variant="body" color={Colors.semantic.clear} style={styles.bulletPoint}>
-              ✓
-            </AppText>
-            <AppText variant="caption" color={Colors.secondaryText} style={styles.bulletText}>
-              Ensure all itemized prices and totals are clearly visible
-            </AppText>
-          </View>
-          <View style={styles.bulletItem}>
-            <AppText variant="body" color={Colors.semantic.clear} style={styles.bulletPoint}>
-              ✓
-            </AppText>
-            <AppText variant="caption" color={Colors.secondaryText} style={styles.bulletText}>
-              Flatten paper documents and avoid harsh shadows
-            </AppText>
-          </View>
-          <View style={styles.bulletItem}>
-            <AppText variant="body" color={Colors.semantic.clear} style={styles.bulletPoint}>
-              ✓
-            </AppText>
-            <AppText variant="caption" color={Colors.secondaryText} style={styles.bulletText}>
-              PDF quotation files and screenshots are also supported
-            </AppText>
+        {/* Primary & Secondary Actions */}
+        <View style={styles.actionsGroup}>
+          <PrimaryButton
+            title="Open Camera"
+            onPress={handleOpenCamera}
+            style={styles.primaryButton}
+            accessibilityHint="Launches camera scanner"
+          />
+          <SecondaryButton
+            title="Choose from Photos"
+            onPress={handleChoosePhotos}
+            style={styles.secondaryButton}
+            accessibilityHint="Opens photo library"
+          />
+        </View>
+
+        {/* Helpful Tip Card */}
+        <Card variant="glass" style={styles.tipCard}>
+          <View style={styles.tipRow}>
+            <View style={styles.sunIconOrb}>
+              <AppText variant="caption" color={Colors.semantic.ask}>
+                💡
+              </AppText>
+            </View>
+            <View style={styles.tipTexts}>
+              <AppText variant="bodyMedium" color={Colors.primaryText} style={styles.tipTitle}>
+                For best results
+              </AppText>
+              <AppText variant="caption" color={Colors.secondaryText} style={styles.tipBody}>
+                Make sure the text is clear and the whole quote is visible.
+              </AppText>
+            </View>
           </View>
         </Card>
-      </View>
-
-      {/* Actions */}
-      <View style={styles.actionsSection}>
-        <PrimaryButton
-          title="Open Camera"
-          onPress={handleOpenCamera}
-          style={styles.actionButton}
-          accessibilityHint="Launches camera scanner"
-        />
-        <SecondaryButton
-          title="Choose from Photos"
-          onPress={handleChoosePhotos}
-          style={styles.actionButton}
-          accessibilityHint="Opens photo library"
-        />
       </View>
     </Screen>
   );
@@ -109,116 +95,140 @@ export default function ScanScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'space-between',
     paddingVertical: Spacing.xl,
   },
-  topSection: {
+  content: {
     alignItems: 'center',
-    paddingTop: Spacing.lg,
+    paddingHorizontal: Spacing.xs,
   },
-  viewfinderContainer: {
-    marginBottom: Spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewfinderBox: {
-    width: 140,
-    height: 170,
-    borderRadius: Radii.large,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
+  glassCameraWrapper: {
+    width: SCREEN_WIDTH * 0.7,
+    height: 180,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    marginVertical: Spacing.lg,
   },
-  corner: {
+  cameraAmbientGlow: {
     position: 'absolute',
-    width: 16,
-    height: 16,
-    borderColor: Colors.primaryText,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(191, 219, 254, 0.45)',
   },
-  cornerTL: {
-    top: 10,
-    left: 10,
-    borderTopWidth: 2,
-    borderLeftWidth: 2,
+  glassPlateBack: {
+    position: 'absolute',
+    width: 170,
+    height: 130,
+    borderRadius: Radii.extraLarge,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.75)',
+    transform: [{ rotate: '-6deg' }],
   },
-  cornerTR: {
-    top: 10,
-    right: 10,
-    borderTopWidth: 2,
-    borderRightWidth: 2,
+  glassPlateFront: {
+    width: 180,
+    height: 140,
+    borderRadius: Radii.extraLarge,
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Shadows.elevated,
   },
-  cornerBL: {
-    bottom: 10,
-    left: 10,
-    borderBottomWidth: 2,
-    borderLeftWidth: 2,
+  outerLensRing: {
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    backgroundColor: 'rgba(238, 242, 255, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(191, 219, 254, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  cornerBR: {
-    bottom: 10,
-    right: 10,
-    borderBottomWidth: 2,
-    borderRightWidth: 2,
+  middleLensRing: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  innerDocIcon: {
-    width: 60,
-    gap: 8,
+  innerCoreLens: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#1D4ED8',
+    position: 'relative',
   },
-  docLine1: {
+  lensReflection: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 6,
     height: 6,
-    backgroundColor: '#E5E7EB',
     borderRadius: 3,
-    width: '100%',
-  },
-  docLine2: {
-    height: 6,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 3,
-    width: '75%',
-  },
-  docLine3: {
-    height: 6,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 3,
-    width: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
   },
   headline: {
-    marginBottom: Spacing.xs,
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '700',
+    marginBottom: 6,
+    letterSpacing: -0.4,
   },
   supportingText: {
-    maxWidth: 300,
+    fontSize: 14.5,
+    lineHeight: 21,
+    maxWidth: 290,
+    marginBottom: Spacing.xl,
   },
-  guidanceSection: {
-    marginVertical: Spacing.xl,
+  actionsGroup: {
+    width: '100%',
+    gap: Spacing.xs + 2,
+    marginBottom: Spacing.xl,
   },
-  guideCard: {
-    backgroundColor: Colors.surface,
+  primaryButton: {
+    backgroundColor: Colors.darkPrimaryCTA,
+    borderRadius: Radii.medium,
+    minHeight: 50,
+  },
+  secondaryButton: {
+    backgroundColor: Colors.glassSurfaceHigh,
+    borderWidth: 1,
+    borderColor: Colors.glassBorder,
+    borderRadius: Radii.medium,
+    minHeight: 50,
+  },
+  tipCard: {
+    width: '100%',
     padding: Spacing.md,
+    borderRadius: Radii.large,
   },
-  guideTitle: {
-    marginBottom: Spacing.sm,
-  },
-  bulletItem: {
+  tipRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.xs,
-    marginBottom: Spacing.xs,
+    alignItems: 'center',
+    gap: 12,
   },
-  bulletPoint: {
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: '700',
+  sunIconOrb: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  bulletText: {
+  tipTexts: {
     flex: 1,
   },
-  actionsSection: {
-    gap: Spacing.xs,
-    marginTop: Spacing.md,
+  tipTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 2,
   },
-  actionButton: {
-    width: '100%',
+  tipBody: {
+    fontSize: 12.5,
+    lineHeight: 17,
   },
 });
