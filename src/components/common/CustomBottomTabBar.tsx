@@ -6,8 +6,8 @@ import { AppText } from '@/components/ui';
 import { TabIcon } from '@/components/common/TabIcon';
 
 /**
- * Custom floating liquid glass bottom navigation bar with a prominent central scan action
- * perfectly recreating the reference design's tactile, floating bar.
+ * Custom floating liquid glass bottom navigation bar.
+ * All tabs (Home, Quotes, Scan, Settings) share consistent, elegant styling.
  */
 export const CustomBottomTabBar: React.FC<BottomTabBarProps> = ({
   state,
@@ -34,32 +34,10 @@ export const CustomBottomTabBar: React.FC<BottomTabBarProps> = ({
             }
           };
 
-          // Special Prominent Central Scan Button
-          if (routeName === 'scan') {
-            return (
-              <View key={route.key} style={styles.scanSlot} pointerEvents="box-none">
-                <Pressable
-                  onPress={onPress}
-                  accessibilityRole="button"
-                  accessibilityLabel="Scan Quote"
-                  accessibilityState={{ selected: isFocused }}
-                  style={({ pressed }) => [
-                    styles.scanButton,
-                    pressed && styles.scanButtonPressed,
-                  ]}
-                >
-                  <View style={styles.scanInnerOrb}>
-                    <TabIcon name="scan" focused={true} color="#FFFFFF" size={24} />
-                  </View>
-                </Pressable>
-              </View>
-            );
-          }
-
-          // Regular Tab Items (Home, Quotes, Settings)
-          const getIconName = (): 'home' | 'quotes' | 'settings' => {
+          const getIconName = (): 'home' | 'quotes' | 'scan' | 'settings' => {
             if (routeName === 'index') return 'home';
             if (routeName === 'quotes') return 'quotes';
+            if (routeName === 'scan') return 'scan';
             return 'settings';
           };
 
@@ -140,29 +118,5 @@ const styles = StyleSheet.create({
   },
   tabLabelFocused: {
     fontWeight: '700',
-  },
-  scanSlot: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 60,
-  },
-  scanButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: Colors.darkPrimaryCTA,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    ...Shadows.hero,
-  },
-  scanInnerOrb: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scanButtonPressed: {
-    transform: [{ scale: 0.94 }],
-    opacity: 0.9,
   },
 });
